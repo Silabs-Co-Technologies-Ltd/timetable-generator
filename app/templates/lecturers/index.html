@@ -1,0 +1,5 @@
+{% extends "layouts/base.html" %}{% block content %}
+<h2>Lecturers</h2>
+<form method="post" class="form-grid"><input name="name" placeholder="Name" required><input name="email" type="email" placeholder="Email"><button>Save</button></form>
+<table><tr><th>Name</th><th>Email</th></tr>{% for lecturer in lecturers %}<tr><td>{{ lecturer.name }}</td><td>{{ lecturer.email or '—' }}</td></tr>{% endfor %}</table>
+{% endblock %}

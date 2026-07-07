@@ -1,0 +1,16 @@
+{% extends "layouts/base.html" %}
+{% block content %}
+<section class="hero">
+  <h2>Department scheduling workspace</h2>
+  <p>Enter lecturers, rooms, timeslots, groups, and courses, then generate a clash-aware timetable.</p>
+  <form method="post" action="{{ url_for('main.generate_timetable') }}">
+    <button type="submit">Generate timetable</button>
+  </form>
+</section>
+<section class="cards">
+  {% for label, value in counts.items() %}<article><strong>{{ value }}</strong><span>{{ label }}</span></article>{% endfor %}
+</section>
+{% if latest_timetable %}
+  <p>Latest timetable: <a href="{{ url_for('main.view_timetable', timetable_id=latest_timetable.id) }}">{{ latest_timetable.term }} ({{ latest_timetable.status }})</a></p>
+{% endif %}
+{% endblock %}
