@@ -1,0 +1,5 @@
+{% extends "layouts/base.html" %}{% block content %}
+<h2>Rooms</h2>
+<form method="post" class="form-grid"><input name="code" placeholder="Room code" required><input name="capacity" type="number" min="1" placeholder="Capacity" required><label><input name="has_projection" type="checkbox"> Projection</label><button>Save</button></form>
+<table><tr><th>Code</th><th>Capacity</th><th>Projection</th></tr>{% for room in rooms %}<tr><td>{{ room.code }}</td><td>{{ room.capacity }}</td><td>{{ 'Yes' if room.has_projection else 'No' }}</td></tr>{% endfor %}</table>
+{% endblock %}

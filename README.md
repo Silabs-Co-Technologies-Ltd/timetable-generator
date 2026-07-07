@@ -4,7 +4,7 @@ A Python-based web application for generating academic timetables using a constr
 
 ## Current Status
 
-Planning and requirements phase. The reconciled Software Requirements Document is available at [`docs/software-requirements.md`](docs/software-requirements.md).
+Initial Flask project scaffold is in place. The reconciled Software Requirements Document is available at [`docs/software-requirements.md`](docs/software-requirements.md).
 
 The current requirements are based on the project proposal in `docs/Turaki_Ch1-3_Formatted.docx`, especially Chapter Three's requirements analysis, system requirements specification, system architecture, and testing strategy.
 
@@ -52,24 +52,31 @@ The source proposal identifies the following preferred implementation stack:
 
 ```text
 .
-├── docs/
-│   ├── Turaki_Ch1-3_Formatted.docx
-│   └── software-requirements.md
+├── app/
+│   ├── models/              # SQLAlchemy data models
+│   ├── routes/              # Flask blueprints and request handlers
+│   ├── services/            # Scheduling and export services
+│   ├── static/              # CSS and JavaScript assets
+│   └── templates/           # Jinja2 templates
+├── docs/                    # Requirements and source proposal
+├── instance/                # Local SQLite database location (ignored)
+├── tests/                   # Pytest suite
+├── pyproject.toml           # Python package and tooling configuration
+├── wsgi.py                  # Production WSGI entry point
 └── README.md
 ```
 
 ## Getting Started
 
-Implementation has not started yet. Recommended next steps:
+Recommended next steps:
 
 1. Confirm the production deployment target: institutional cPanel/shared hosting, LAN server, or another Python hosting environment.
-2. Scaffold the Flask application with a modular project layout.
-3. Define database models for courses, lecturers, rooms, availability, time slots, timetables, and audit events.
-4. Implement CRUD workflows and validation for all scheduling inputs.
-5. Build and test the CSP scheduling engine independently.
-6. Add timetable grid views, conflict/infeasibility reporting, and export workflows.
-7. Add authentication and role-based access control.
-8. Document deployment and operational setup for the selected environment.
+2. Define database models for courses, lecturers, rooms, availability, time slots, timetables, and audit events.
+3. Implement CRUD workflows and validation for all scheduling inputs.
+4. Build and test the CSP scheduling engine independently.
+5. Add timetable grid views, conflict/infeasibility reporting, and export workflows.
+6. Add authentication and role-based access control.
+7. Document deployment and operational setup for the selected environment.
 
 ## Documentation
 

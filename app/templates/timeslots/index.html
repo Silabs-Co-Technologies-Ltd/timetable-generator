@@ -1,0 +1,5 @@
+{% extends "layouts/base.html" %}{% block content %}
+<h2>Timeslots</h2>
+<form method="post" class="form-grid"><input name="day" placeholder="Day" required><input name="label" placeholder="Label" required><input name="start_time" type="time" required><input name="end_time" type="time" required><button>Save</button></form>
+<table><tr><th>Day</th><th>Time</th><th>Label</th></tr>{% for slot in timeslots %}<tr><td>{{ slot.day }}</td><td>{{ slot.start_time.strftime('%H:%M') }}–{{ slot.end_time.strftime('%H:%M') }}</td><td>{{ slot.label }}</td></tr>{% endfor %}</table>
+{% endblock %}

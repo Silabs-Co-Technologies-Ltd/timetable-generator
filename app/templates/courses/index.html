@@ -1,0 +1,7 @@
+{% extends "layouts/base.html" %}{% block content %}
+<h2>Student groups</h2>
+<form method="post" action="{{ url_for('main.groups') }}" class="form-grid"><input name="name" placeholder="Group name" required><input name="level" placeholder="Level"><input name="size" type="number" min="1" placeholder="Size" required><button>Save group</button></form>
+<h2>Courses</h2>
+<form method="post" class="form-grid"><input name="code" placeholder="Code" required><input name="title" placeholder="Title" required><select name="lecturer_id" required>{% for lecturer in lecturers %}<option value="{{ lecturer.id }}">{{ lecturer.name }}</option>{% endfor %}</select><select name="student_group_id" required>{% for group in groups %}<option value="{{ group.id }}">{{ group.name }}</option>{% endfor %}</select><input name="expected_class_size" type="number" min="1" placeholder="Class size" required><input name="weekly_contact_hours" type="number" min="1" value="1" required><label><input type="checkbox" name="requires_projection"> Needs projection</label><button>Save course</button></form>
+<table><tr><th>Code</th><th>Title</th><th>Lecturer</th><th>Group</th><th>Hours</th></tr>{% for course in courses %}<tr><td>{{ course.code }}</td><td>{{ course.title }}</td><td>{{ course.lecturer.name }}</td><td>{{ course.student_group.name }}</td><td>{{ course.weekly_contact_hours }}</td></tr>{% endfor %}</table>
+{% endblock %}
