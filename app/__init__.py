@@ -6,6 +6,7 @@ from pathlib import Path
 from flask import Flask
 
 from app.extensions import db
+from app.models import User
 from app.routes import register_blueprints
 
 
@@ -38,5 +39,14 @@ def create_app(config_object: str | None = None) -> Flask:
 
     with app.app_context():
         db.create_all()
+        if User.query.count() == 0:
+            admin = User(
+                name=os.getenv("INITIAL_ADMIN_NAME", "System Administrator"),
+                email=os.getenv("INITIAL_ADMIN_EMAIL", "admin@example.com"),
+                role="admin",
+            )
+            admin.set_password(os.getenv("INITIAL_ADMIN_PASSWORD", "change-me-now"))
+            db.session.add(admin)
+            db.session.commit()
 
     return app
