@@ -1,0 +1,11 @@
+{% extends "layouts/base.html" %}{% block content %}
+<section class="auth-panel">
+  <h2>Sign in</h2>
+  <p>Use your timetable system account to access role-based tools.</p>
+  <form method="post" class="form-grid auth-form">
+    <input name="email" type="email" placeholder="Email" required autofocus>
+    <input name="password" type="password" placeholder="Password" required>
+    <button type="submit">Sign in</button>
+  </form>
+</section>
+{% endblock %}

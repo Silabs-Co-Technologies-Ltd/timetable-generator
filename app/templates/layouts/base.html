@@ -10,11 +10,19 @@
   <header class="site-header">
     <h1>Automated Timetable Generator</h1>
     <nav>
-      <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
-      <a href="{{ url_for('main.lecturers') }}">Lecturers</a>
-      <a href="{{ url_for('main.rooms') }}">Rooms</a>
-      <a href="{{ url_for('main.timeslots') }}">Timeslots</a>
-      <a href="{{ url_for('main.courses') }}">Courses</a>
+      {% if g.user %}
+        <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+        {% if g.user.can_manage_data %}
+          <a href="{{ url_for('main.lecturers') }}">Lecturers</a>
+          <a href="{{ url_for('main.rooms') }}">Rooms</a>
+          <a href="{{ url_for('main.timeslots') }}">Timeslots</a>
+          <a href="{{ url_for('main.courses') }}">Courses</a>
+        {% endif %}
+        {% if g.user.can_manage_users %}<a href="{{ url_for('auth.users') }}">Users</a>{% endif %}
+        <form method="post" action="{{ url_for('auth.logout') }}" class="nav-form"><button type="submit">Sign out {{ g.user.name }}</button></form>
+      {% else %}
+        <a href="{{ url_for('auth.login') }}">Sign in</a>
+      {% endif %}
     </nav>
   </header>
   <main class="container">

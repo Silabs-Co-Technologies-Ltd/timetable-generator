@@ -23,6 +23,16 @@ The planned system will support:
 - CSV and PDF exports for departmental publication.
 - Administrative access control before production deployment.
 
+## Authentication and roles
+
+The application now requires users to sign in before accessing timetable pages. Three roles are available:
+
+- **Admin:** manage users, scheduling data, and timetable generation.
+- **Scheduler:** manage scheduling data and generate timetables.
+- **Viewer:** view the dashboard and generated timetables only.
+
+On first startup, the app creates an initial admin account when no users exist. Configure it with `INITIAL_ADMIN_NAME`, `INITIAL_ADMIN_EMAIL`, and `INITIAL_ADMIN_PASSWORD`; otherwise the local-development defaults are `System Administrator`, `admin@example.com`, and `change-me-now`. Change that password immediately outside local development.
+
 ## Proposed Technical Direction
 
 The source proposal identifies the following preferred implementation stack:

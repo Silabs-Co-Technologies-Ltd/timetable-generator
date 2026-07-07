@@ -7,11 +7,13 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from app.extensions import db
 from app.models import Course, Lecturer, Room, StudentGroup, Timetable, TimetableEntry, Timeslot
 from app.services.scheduler import generate_schedule
+from app.routes.auth import login_required, roles_required
 
 bp = Blueprint("main", __name__)
 
 
 @bp.get("/")
+@login_required
 def dashboard():
     return render_template(
         "dashboard.html",
@@ -26,6 +28,7 @@ def dashboard():
 
 
 @bp.route("/lecturers", methods=["GET", "POST"])
+@roles_required("admin", "scheduler")
 def lecturers():
     if request.method == "POST":
         db.session.add(Lecturer(name=request.form["name"], email=request.form.get("email") or None))
@@ -36,6 +39,7 @@ def lecturers():
 
 
 @bp.route("/rooms", methods=["GET", "POST"])
+@roles_required("admin", "scheduler")
 def rooms():
     if request.method == "POST":
         db.session.add(
@@ -52,6 +56,7 @@ def rooms():
 
 
 @bp.route("/groups", methods=["POST"])
+@roles_required("admin", "scheduler")
 def groups():
     db.session.add(
         StudentGroup(name=request.form["name"], level=request.form.get("level"), size=int(request.form["size"]))
@@ -62,6 +67,7 @@ def groups():
 
 
 @bp.route("/timeslots", methods=["GET", "POST"])
+@roles_required("admin", "scheduler")
 def timeslots():
     if request.method == "POST":
         start = datetime.strptime(request.form["start_time"], "%H:%M").time()
@@ -74,6 +80,7 @@ def timeslots():
 
 
 @bp.route("/courses", methods=["GET", "POST"])
+@roles_required("admin", "scheduler")
 def courses():
     if request.method == "POST":
         db.session.add(
@@ -99,6 +106,7 @@ def courses():
 
 
 @bp.route("/timetables/generate", methods=["POST"])
+@roles_required("admin", "scheduler")
 def generate_timetable():
     result = generate_schedule(Course.query.all(), Room.query.all(), Timeslot.query.order_by(Timeslot.day, Timeslot.start_time).all())
     timetable = Timetable(status="complete" if result.success else "infeasible", conflict_summary="\n".join(result.messages))
@@ -121,6 +129,7 @@ def generate_timetable():
 
 
 @bp.get("/timetables/<int:timetable_id>")
+@login_required
 def view_timetable(timetable_id: int):
     timetable = Timetable.query.get_or_404(timetable_id)
     return render_template("timetables/show.html", timetable=timetable)
