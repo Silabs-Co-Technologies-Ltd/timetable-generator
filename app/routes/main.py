@@ -82,15 +82,41 @@ def timeslots():
 @bp.route("/courses", methods=["GET", "POST"])
 @roles_required("admin", "scheduler")
 def courses():
+    lecturers = Lecturer.query.order_by(Lecturer.name).all()
+    groups = StudentGroup.query.order_by(StudentGroup.name).all()
+
     if request.method == "POST":
+        if not lecturers or not groups:
+            flash("Add at least one lecturer and one student group before saving a course.", "error")
+            return redirect(url_for("main.courses"))
+
+        code = request.form.get("code", "").strip().upper()
+        title = request.form.get("title", "").strip()
+        lecturer_id = request.form.get("lecturer_id", type=int)
+        student_group_id = request.form.get("student_group_id", type=int)
+        expected_class_size = request.form.get("expected_class_size", type=int)
+        weekly_contact_hours = request.form.get("weekly_contact_hours", type=int)
+
+        selected_lecturer = db.session.get(Lecturer, lecturer_id) if lecturer_id else None
+        selected_group = db.session.get(StudentGroup, student_group_id) if student_group_id else None
+        if not code or not title or not selected_lecturer or not selected_group:
+            flash("Select a valid lecturer and student group, then enter the course code and title.", "error")
+            return redirect(url_for("main.courses"))
+        if expected_class_size is None or expected_class_size < 1 or weekly_contact_hours is None or weekly_contact_hours < 1:
+            flash("Class size and weekly contact hours must be at least 1.", "error")
+            return redirect(url_for("main.courses"))
+        if Course.query.filter_by(code=code).first():
+            flash(f"Course code {code} already exists.", "error")
+            return redirect(url_for("main.courses"))
+
         db.session.add(
             Course(
-                code=request.form["code"],
-                title=request.form["title"],
-                lecturer_id=int(request.form["lecturer_id"]),
-                student_group_id=int(request.form["student_group_id"]),
-                expected_class_size=int(request.form["expected_class_size"]),
-                weekly_contact_hours=int(request.form["weekly_contact_hours"]),
+                code=code,
+                title=title,
+                lecturer_id=selected_lecturer.id,
+                student_group_id=selected_group.id,
+                expected_class_size=expected_class_size,
+                weekly_contact_hours=weekly_contact_hours,
                 requires_projection=bool(request.form.get("requires_projection")),
             )
         )
@@ -100,8 +126,8 @@ def courses():
     return render_template(
         "courses/index.html",
         courses=Course.query.order_by(Course.code).all(),
-        lecturers=Lecturer.query.order_by(Lecturer.name).all(),
-        groups=StudentGroup.query.order_by(StudentGroup.name).all(),
+        lecturers=lecturers,
+        groups=groups,
     )
 
 
