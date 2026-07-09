@@ -1,5 +1,6 @@
 {% extends "layouts/base.html" %}{% block content %}
 <h2>{{ timetable.term }} — {{ timetable.status|title }}</h2>
+<p><a class="button-link" href="{{ url_for('main.export_timetable_pdf', timetable_id=timetable.id) }}">Export PDF</a></p>
 {% if timetable.conflict_summary %}<pre class="summary">{{ timetable.conflict_summary }}</pre>{% endif %}
 <table><tr><th>Day</th><th>Time</th><th>Course</th><th>Lecturer</th><th>Room</th><th>Group</th></tr>{% for entry in timetable.entries|sort(attribute='timeslot.day') %}<tr><td>{{ entry.timeslot.day }}</td><td>{{ entry.timeslot.label }}</td><td>{{ entry.course.code }} — {{ entry.course.title }}</td><td>{{ entry.lecturer.name }}</td><td>{{ entry.room.code }}</td><td>{{ entry.student_group.name }}</td></tr>{% endfor %}</table>
 {% endblock %}
