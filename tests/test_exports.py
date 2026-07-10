@@ -2,7 +2,6 @@ from datetime import datetime, time
 
 from app.models import Course, Lecturer, Room, StudentGroup, Timetable, TimetableEntry, Timeslot
 from app.services.exports import build_timetable_pdf
-from app.services.supabase import timetable_payload
 
 
 def make_timetable():
@@ -27,81 +26,3 @@ def test_build_timetable_pdf_returns_pdf_bytes():
 
     assert pdf.startswith(b"%PDF")
     assert len(pdf) > 1000
-
-
-def test_timetable_payload_serializes_history_entries():
-    payload = timetable_payload(make_timetable())
-
-    assert payload["local_id"] == 7
-    assert payload["entries"][0]["course_code"] == "CSC401"
-    assert payload["entries"][0]["room"] == "LAB1"
-
-
-def test_fetch_history_reports_missing_supabase_configuration(monkeypatch):
-    from app.services.supabase import fetch_timetable_history
-
-    monkeypatch.delenv("SUPABASE_URL", raising=False)
-    monkeypatch.delenv("SUPABASE_SECRET_KEY", raising=False)
-    monkeypatch.delenv("SUPABASE_PUBLISHABLE_KEY", raising=False)
-    monkeypatch.delenv("SUPABASE_KEY", raising=False)
-    monkeypatch.delenv("SUPABASE_SERVICE_ROLE_KEY", raising=False)
-    monkeypatch.delenv("SUPABASE_ANON_KEY", raising=False)
-    monkeypatch.delenv("NEXT_PUBLIC_SUPABASE_URL", raising=False)
-    monkeypatch.delenv("NEXT_PUBLIC_SUPABASE_ANON_KEY", raising=False)
-
-    rows, message = fetch_timetable_history()
-
-    assert rows == []
-    assert message == (
-        "Supabase is not configured. Missing: SUPABASE_URL or NEXT_PUBLIC_SUPABASE_URL, "
-        "SUPABASE_SECRET_KEY, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_PUBLISHABLE_KEY, "
-        "SUPABASE_KEY, SUPABASE_ANON_KEY, or NEXT_PUBLIC_SUPABASE_ANON_KEY."
-    )
-
-
-def test_supabase_config_accepts_supabase_key_alias(monkeypatch):
-    from app.services.supabase import SupabaseConfig
-
-    monkeypatch.setenv("SUPABASE_URL", "https://example.supabase.co")
-    monkeypatch.delenv("SUPABASE_SECRET_KEY", raising=False)
-    monkeypatch.delenv("SUPABASE_SERVICE_ROLE_KEY", raising=False)
-    monkeypatch.delenv("SUPABASE_PUBLISHABLE_KEY", raising=False)
-    monkeypatch.delenv("SUPABASE_ANON_KEY", raising=False)
-    monkeypatch.delenv("NEXT_PUBLIC_SUPABASE_ANON_KEY", raising=False)
-    monkeypatch.setenv("SUPABASE_KEY", "publishable-test-key")
-
-    config = SupabaseConfig.from_env()
-
-    assert config is not None
-    assert config.key == "publishable-test-key"
-    assert config.endpoint == "https://example.supabase.co/rest/v1/timetable_history"
-
-
-def test_firebase_connection_reports_missing_configuration(monkeypatch):
-    from app.services.firebase import check_firebase_connection
-
-    monkeypatch.delenv("FIREBASE_DATABASE_URL", raising=False)
-
-    connected, message = check_firebase_connection()
-
-    assert connected is False
-    assert "Firebase is not configured" in message
-
-
-def test_supabase_config_accepts_vercel_supabase_aliases(monkeypatch):
-    from app.services.supabase import SupabaseConfig
-
-    monkeypatch.delenv("SUPABASE_URL", raising=False)
-    monkeypatch.delenv("SUPABASE_SECRET_KEY", raising=False)
-    monkeypatch.delenv("SUPABASE_PUBLISHABLE_KEY", raising=False)
-    monkeypatch.delenv("SUPABASE_KEY", raising=False)
-    monkeypatch.delenv("SUPABASE_SERVICE_ROLE_KEY", raising=False)
-    monkeypatch.delenv("SUPABASE_ANON_KEY", raising=False)
-    monkeypatch.setenv("NEXT_PUBLIC_SUPABASE_URL", "https://vercel-example.supabase.co")
-    monkeypatch.setenv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "anon-test-key")
-
-    config = SupabaseConfig.from_env()
-
-    assert config is not None
-    assert config.url == "https://vercel-example.supabase.co"
-    assert config.key == "anon-test-key"

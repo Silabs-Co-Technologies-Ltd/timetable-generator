@@ -28,16 +28,17 @@ def _load_dotenv(path: str = ".env") -> None:
 
 
 def _default_database_uri(app: Flask) -> str:
-    """Return a writable SQLite URI for local and serverless deployments."""
-    configured_uri = os.getenv("DATABASE_URL")
-    if configured_uri:
-        return configured_uri
+    """Return the persistent SQLite database URI used for all application data."""
+    configured_path = os.getenv("SQLITE_DATABASE_PATH", "").strip()
+    if configured_path:
+        path = Path(configured_path).expanduser()
+        if not path.is_absolute():
+            path = Path(app.instance_path) / path
+    else:
+        path = Path(app.instance_path) / "timetable.sqlite3"
 
-    if os.getenv("VERCEL"):
-        return "sqlite:////tmp/timetable.sqlite"
-
-    Path(app.instance_path).mkdir(parents=True, exist_ok=True)
-    return "sqlite:///timetable.sqlite"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    return f"sqlite:///{path}"
 
 
 def create_app(config_object: str | None = None) -> Flask:

@@ -16,19 +16,8 @@
 </section>
 <section>
   <h3>Timetable history</h3>
-  <div class="integration-status" aria-label="Optional integration status">
-    <p>Local timetable history is available in this application.</p>
-    {% if supabase_status[0] or firebase_status[0] %}
-      <ul>
-        {% if supabase_status[0] %}<li>Supabase history sync: {{ supabase_status[1] }}</li>{% endif %}
-        {% if firebase_status[0] %}<li>Firebase connectivity check: {{ firebase_status[1] }}</li>{% endif %}
-      </ul>
-    {% else %}
-      <details>
-        <summary>Optional cloud integrations are not configured</summary>
-        <p>Supabase history sync and the Firebase connectivity check are optional. Generate a timetable to save it locally, or configure these services later if you need cloud sync diagnostics.</p>
-      </details>
-    {% endif %}
+  <div class="integration-status" aria-label="Database status">
+    <p>All courses, lecturers, rooms, timeslots, users, and generated timetables are stored in the persistent SQLite database.</p>
   </div>
   {% if timetable_history %}
     <ul>

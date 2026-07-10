@@ -7,11 +7,9 @@ from flask import Blueprint, flash, redirect, render_template, request, send_fil
 
 from app.extensions import db
 from app.models import Course, Lecturer, Room, StudentGroup, Timetable, TimetableEntry, Timeslot
-from app.services.exports import build_timetable_pdf
-from app.services.firebase import check_firebase_connection
-from app.services.scheduler import generate_schedule
-from app.services.supabase import check_supabase_connection, fetch_timetable_history, sync_timetable_history
 from app.routes.auth import login_required, roles_required
+from app.services.exports import build_timetable_pdf
+from app.services.scheduler import generate_schedule
 
 bp = Blueprint("main", __name__)
 
@@ -29,8 +27,6 @@ def dashboard():
         },
         latest_timetable=Timetable.query.order_by(Timetable.generated_at.desc()).first(),
         timetable_history=Timetable.query.order_by(Timetable.generated_at.desc()).limit(5).all(),
-        supabase_status=check_supabase_connection(),
-        firebase_status=check_firebase_connection(),
     )
 
 
@@ -189,9 +185,8 @@ def generate_timetable():
             )
         )
     db.session.commit()
-    synced, sync_message = sync_timetable_history(timetable)
     flash(result.messages[0], "success" if result.success else "error")
-    flash(sync_message, "success" if synced else "warning")
+    flash("Timetable saved to the persistent SQLite database.", "success")
     return redirect(url_for("main.view_timetable", timetable_id=timetable.id))
 
 
@@ -199,13 +194,7 @@ def generate_timetable():
 @login_required
 def timetable_history():
     local_history = Timetable.query.order_by(Timetable.generated_at.desc()).all()
-    supabase_history, supabase_message = fetch_timetable_history(limit=25)
-    return render_template(
-        "timetables/index.html",
-        local_history=local_history,
-        supabase_history=supabase_history,
-        supabase_message=supabase_message,
-    )
+    return render_template("timetables/index.html", local_history=local_history)
 
 
 @bp.get("/timetables/<int:timetable_id>")
