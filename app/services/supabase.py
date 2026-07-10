@@ -20,7 +20,11 @@ class SupabaseConfig:
     @classmethod
     def from_env(cls) -> "SupabaseConfig | None":
         url = os.getenv("SUPABASE_URL", "").rstrip("/")
-        key = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
+        key = (
+            os.getenv("SUPABASE_SECRET_KEY")
+            or os.getenv("SUPABASE_PUBLISHABLE_KEY")
+            or os.getenv("SUPABASE_KEY")
+        )
         table = os.getenv("SUPABASE_TIMETABLE_TABLE", "timetable_history")
         if not url or not key:
             return None
@@ -31,8 +35,12 @@ class SupabaseConfig:
         missing = []
         if not os.getenv("SUPABASE_URL", "").strip():
             missing.append("SUPABASE_URL")
-        if not (os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")):
-            missing.append("SUPABASE_SECRET_KEY or SUPABASE_PUBLISHABLE_KEY")
+        if not (
+            os.getenv("SUPABASE_SECRET_KEY")
+            or os.getenv("SUPABASE_PUBLISHABLE_KEY")
+            or os.getenv("SUPABASE_KEY")
+        ):
+            missing.append("SUPABASE_SECRET_KEY, SUPABASE_PUBLISHABLE_KEY, or SUPABASE_KEY")
         return missing
 
     @property
