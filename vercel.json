@@ -1,15 +1,28 @@
 {
+<<<<<<< codex/fix-build-failure-in-vercel
   "builds": [
     {
       "src": "wsgi.py",
+=======
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/index.py",
+>>>>>>> main
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
+<<<<<<< codex/fix-build-failure-in-vercel
       "dest": "wsgi.py"
     }
   ],
   "installCommand": "python -m pip install --upgrade pip && python -m pip install -r requirements.txt"
+=======
+      "dest": "api/index.py"
+    }
+  ]
+>>>>>>> main
 }
