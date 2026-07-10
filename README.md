@@ -95,7 +95,7 @@ Recommended next steps:
 
 ## Supabase timetable history and PDF export
 
-Generated timetables are always saved in the application database and remain available as local history from the dashboard. When Supabase environment variables are configured, each generated timetable is also copied to Supabase through PostgREST so the history can be retained outside the web server.
+Generated timetables are always saved in the application database and remain available as local history from the dashboard and the `/timetables` history page. When Supabase environment variables are configured, each generated timetable is also copied to Supabase through PostgREST so the history can be retained outside the web server.
 
 Set these variables in the deployment environment:
 
@@ -122,3 +122,16 @@ create table if not exists timetable_history (
 ```
 
 Users can download any stored timetable as a PDF from the timetable detail page or from the latest-timetable link on the dashboard.
+
+
+## Optional Firebase connectivity check
+
+Supabase is the configured datastore for timetable history. Firebase is not used for timetable storage, but the dashboard can attempt a read-only Firebase Realtime Database connection check when these optional variables are present:
+
+```text
+FIREBASE_DATABASE_URL=https://your-project-default-rtdb.firebaseio.com
+FIREBASE_DATABASE_SECRET=optional-database-secret-or-token
+FIREBASE_AUTH_TOKEN=optional-auth-token
+```
+
+If those variables are absent, the dashboard reports that Firebase is not configured.

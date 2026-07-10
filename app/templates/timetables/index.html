@@ -1,0 +1,48 @@
+{% extends "layouts/base.html" %}{% block content %}
+<h2>Timetable history</h2>
+<p>Review generated timetables stored locally and export any local timetable as a PDF.</p>
+
+<section>
+  <h3>Local history</h3>
+  {% if local_history %}
+    <table>
+      <tr><th>Generated</th><th>Term</th><th>Status</th><th>Entries</th><th>Actions</th></tr>
+      {% for timetable in local_history %}
+        <tr>
+          <td>{{ timetable.generated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td>{{ timetable.term }}</td>
+          <td>{{ timetable.status|title }}</td>
+          <td>{{ timetable.entries|length }}</td>
+          <td>
+            <a href="{{ url_for('main.view_timetable', timetable_id=timetable.id) }}">View</a> ·
+            <a href="{{ url_for('main.export_timetable_pdf', timetable_id=timetable.id) }}">Export PDF</a>
+          </td>
+        </tr>
+      {% endfor %}
+    </table>
+  {% else %}
+    <p>No local timetables have been generated yet.</p>
+  {% endif %}
+</section>
+
+<section>
+  <h3>Supabase history</h3>
+  <p>{{ supabase_message }}</p>
+  {% if supabase_history %}
+    <table>
+      <tr><th>Generated</th><th>Term</th><th>Status</th><th>Local ID</th><th>Entries</th></tr>
+      {% for row in supabase_history %}
+        <tr>
+          <td>{{ row.generated_at }}</td>
+          <td>{{ row.term }}</td>
+          <td>{{ row.status|title }}</td>
+          <td>{{ row.local_id }}</td>
+          <td>{{ row.entries|length if row.entries else 0 }}</td>
+        </tr>
+      {% endfor %}
+    </table>
+  {% else %}
+    <p>No Supabase history rows are available.</p>
+  {% endif %}
+</section>
+{% endblock %}

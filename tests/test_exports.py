@@ -35,3 +35,27 @@ def test_timetable_payload_serializes_history_entries():
     assert payload["local_id"] == 7
     assert payload["entries"][0]["course_code"] == "CSC401"
     assert payload["entries"][0]["room"] == "LAB1"
+
+
+def test_fetch_history_reports_missing_supabase_configuration(monkeypatch):
+    from app.services.supabase import fetch_timetable_history
+
+    monkeypatch.delenv("SUPABASE_URL", raising=False)
+    monkeypatch.delenv("SUPABASE_SECRET_KEY", raising=False)
+    monkeypatch.delenv("SUPABASE_PUBLISHABLE_KEY", raising=False)
+
+    rows, message = fetch_timetable_history()
+
+    assert rows == []
+    assert message == "Supabase is not configured."
+
+
+def test_firebase_connection_reports_missing_configuration(monkeypatch):
+    from app.services.firebase import check_firebase_connection
+
+    monkeypatch.delenv("FIREBASE_DATABASE_URL", raising=False)
+
+    connected, message = check_firebase_connection()
+
+    assert connected is False
+    assert "Firebase is not configured" in message
