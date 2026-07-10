@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from app import create_app
@@ -55,6 +57,11 @@ def test_dashboard_hides_optional_integration_missing_env_details(client, monkey
     monkeypatch.delenv("SUPABASE_URL", raising=False)
     monkeypatch.delenv("SUPABASE_SECRET_KEY", raising=False)
     monkeypatch.delenv("SUPABASE_PUBLISHABLE_KEY", raising=False)
+    monkeypatch.delenv("SUPABASE_KEY", raising=False)
+    monkeypatch.delenv("NEXT_PUBLIC_SUPABASE_ANON_KEY", raising=False)
+    monkeypatch.delenv("NEXT_PUBLIC_SUPABASE_URL", raising=False)
+    monkeypatch.delenv("SUPABASE_ANON_KEY", raising=False)
+    monkeypatch.delenv("SUPABASE_SERVICE_ROLE_KEY", raising=False)
     monkeypatch.delenv("FIREBASE_DATABASE_URL", raising=False)
     login(client, "viewer@example.com")
 
@@ -85,3 +92,20 @@ def test_admin_can_create_role_based_user(client):
     assert response.status_code == 200
     with client.application.app_context():
         assert User.query.filter_by(email="scheduler@example.com", role="scheduler").one()
+
+
+def test_load_dotenv_reads_supabase_key_alias(tmp_path, monkeypatch):
+    from app import _load_dotenv
+
+    env_file = tmp_path / ".env"
+    env_file.write_text(
+        "SUPABASE_URL=https://example.supabase.co\n"
+        "SUPABASE_KEY=publishable-test-key\n"
+    )
+    monkeypatch.delenv("SUPABASE_URL", raising=False)
+    monkeypatch.delenv("SUPABASE_KEY", raising=False)
+
+    _load_dotenv(str(env_file))
+
+    assert os.environ["SUPABASE_URL"] == "https://example.supabase.co"
+    assert os.environ["SUPABASE_KEY"] == "publishable-test-key"

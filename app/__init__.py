@@ -10,6 +10,23 @@ from app.models import User
 from app.routes import register_blueprints
 
 
+def _load_dotenv(path: str = ".env") -> None:
+    """Load simple KEY=VALUE pairs from a local .env file when present."""
+    env_path = Path(path)
+    if not env_path.exists():
+        return
+
+    for line in env_path.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip("'\"")
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
 def _default_database_uri(app: Flask) -> str:
     """Return a writable SQLite URI for local and serverless deployments."""
     configured_uri = os.getenv("DATABASE_URL")
@@ -24,6 +41,8 @@ def _default_database_uri(app: Flask) -> str:
 
 
 def create_app(config_object: str | None = None) -> Flask:
+    _load_dotenv()
+
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY=os.getenv("SECRET_KEY", "dev-only-change-me"),

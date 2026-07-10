@@ -44,13 +44,18 @@ def test_fetch_history_reports_missing_supabase_configuration(monkeypatch):
     monkeypatch.delenv("SUPABASE_SECRET_KEY", raising=False)
     monkeypatch.delenv("SUPABASE_PUBLISHABLE_KEY", raising=False)
     monkeypatch.delenv("SUPABASE_KEY", raising=False)
+    monkeypatch.delenv("SUPABASE_SERVICE_ROLE_KEY", raising=False)
+    monkeypatch.delenv("SUPABASE_ANON_KEY", raising=False)
+    monkeypatch.delenv("NEXT_PUBLIC_SUPABASE_URL", raising=False)
+    monkeypatch.delenv("NEXT_PUBLIC_SUPABASE_ANON_KEY", raising=False)
 
     rows, message = fetch_timetable_history()
 
     assert rows == []
     assert message == (
-        "Supabase is not configured. Missing: SUPABASE_URL, "
-        "SUPABASE_SECRET_KEY, SUPABASE_PUBLISHABLE_KEY, or SUPABASE_KEY."
+        "Supabase is not configured. Missing: SUPABASE_URL or NEXT_PUBLIC_SUPABASE_URL, "
+        "SUPABASE_SECRET_KEY, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_PUBLISHABLE_KEY, "
+        "SUPABASE_KEY, SUPABASE_ANON_KEY, or NEXT_PUBLIC_SUPABASE_ANON_KEY."
     )
 
 
@@ -59,7 +64,10 @@ def test_supabase_config_accepts_supabase_key_alias(monkeypatch):
 
     monkeypatch.setenv("SUPABASE_URL", "https://example.supabase.co")
     monkeypatch.delenv("SUPABASE_SECRET_KEY", raising=False)
+    monkeypatch.delenv("SUPABASE_SERVICE_ROLE_KEY", raising=False)
     monkeypatch.delenv("SUPABASE_PUBLISHABLE_KEY", raising=False)
+    monkeypatch.delenv("SUPABASE_ANON_KEY", raising=False)
+    monkeypatch.delenv("NEXT_PUBLIC_SUPABASE_ANON_KEY", raising=False)
     monkeypatch.setenv("SUPABASE_KEY", "publishable-test-key")
 
     config = SupabaseConfig.from_env()
@@ -78,3 +86,22 @@ def test_firebase_connection_reports_missing_configuration(monkeypatch):
 
     assert connected is False
     assert "Firebase is not configured" in message
+
+
+def test_supabase_config_accepts_vercel_supabase_aliases(monkeypatch):
+    from app.services.supabase import SupabaseConfig
+
+    monkeypatch.delenv("SUPABASE_URL", raising=False)
+    monkeypatch.delenv("SUPABASE_SECRET_KEY", raising=False)
+    monkeypatch.delenv("SUPABASE_PUBLISHABLE_KEY", raising=False)
+    monkeypatch.delenv("SUPABASE_KEY", raising=False)
+    monkeypatch.delenv("SUPABASE_SERVICE_ROLE_KEY", raising=False)
+    monkeypatch.delenv("SUPABASE_ANON_KEY", raising=False)
+    monkeypatch.setenv("NEXT_PUBLIC_SUPABASE_URL", "https://vercel-example.supabase.co")
+    monkeypatch.setenv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "anon-test-key")
+
+    config = SupabaseConfig.from_env()
+
+    assert config is not None
+    assert config.url == "https://vercel-example.supabase.co"
+    assert config.key == "anon-test-key"
