@@ -47,7 +47,10 @@ def test_fetch_history_reports_missing_supabase_configuration(monkeypatch):
     rows, message = fetch_timetable_history()
 
     assert rows == []
-    assert message == "Supabase is not configured."
+    assert message == (
+        "Supabase is not configured. Missing: SUPABASE_URL, "
+        "SUPABASE_SECRET_KEY or SUPABASE_PUBLISHABLE_KEY."
+    )
 
 
 def test_firebase_connection_reports_missing_configuration(monkeypatch):
