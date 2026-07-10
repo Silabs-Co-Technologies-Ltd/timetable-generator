@@ -51,6 +51,22 @@ def test_viewer_can_open_dashboard_but_cannot_manage_rooms(client):
     assert rooms.status_code == 403
 
 
+def test_dashboard_hides_optional_integration_missing_env_details(client, monkeypatch):
+    monkeypatch.delenv("SUPABASE_URL", raising=False)
+    monkeypatch.delenv("SUPABASE_SECRET_KEY", raising=False)
+    monkeypatch.delenv("SUPABASE_PUBLISHABLE_KEY", raising=False)
+    monkeypatch.delenv("FIREBASE_DATABASE_URL", raising=False)
+    login(client, "viewer@example.com")
+
+    response = client.get("/")
+    body = response.get_data(as_text=True)
+
+    assert response.status_code == 200
+    assert "Optional cloud integrations are not configured" in body
+    assert "SUPABASE_URL" not in body
+    assert "FIREBASE_DATABASE_URL" not in body
+
+
 def test_admin_can_create_role_based_user(client):
     login(client, "admin@example.com")
 

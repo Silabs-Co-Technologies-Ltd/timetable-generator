@@ -137,4 +137,4 @@ FIREBASE_DATABASE_SECRET=optional-database-secret-or-token
 FIREBASE_AUTH_TOKEN=optional-auth-token
 ```
 
-If those variables are absent, the dashboard reports that Firebase is not configured.
+If those variables are absent, the dashboard groups Supabase and Firebase under a collapsed optional-integrations note instead of showing missing environment variables as a blocking error.

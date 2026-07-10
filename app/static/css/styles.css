@@ -33,3 +33,9 @@ nav { display: flex; align-items: center; flex-wrap: wrap; gap: 0.75rem; }
   background: #fef3c7;
   color: #92400e;
 }
+
+.integration-status { background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 0.75rem; margin: 1rem 0; padding: 1rem; }
+.integration-status p { margin: 0 0 0.5rem; }
+.integration-status p:last-child { margin-bottom: 0; }
+.integration-status summary { color: #075985; cursor: pointer; font-weight: 700; }
+.integration-status ul { margin: 0.5rem 0 0; padding-left: 1.25rem; }
