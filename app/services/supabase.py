@@ -26,6 +26,15 @@ class SupabaseConfig:
             return None
         return cls(url=url, key=key, table=table)
 
+    @classmethod
+    def missing_env_names(cls) -> list[str]:
+        missing = []
+        if not os.getenv("SUPABASE_URL", "").strip():
+            missing.append("SUPABASE_URL")
+        if not (os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")):
+            missing.append("SUPABASE_SECRET_KEY or SUPABASE_PUBLISHABLE_KEY")
+        return missing
+
     @property
     def endpoint(self) -> str:
         return f"{self.url}/rest/v1/{self.table}"
@@ -76,11 +85,18 @@ def _error_message(prefix: str, exc: HTTPError | URLError) -> str:
     return f"{prefix} failed: {exc.reason}"
 
 
+def _missing_config_message() -> str:
+    missing = SupabaseConfig.missing_env_names()
+    if not missing:
+        return "Supabase is not configured."
+    return f"Supabase is not configured. Missing: {', '.join(missing)}."
+
+
 def check_supabase_connection(config: SupabaseConfig | None = None) -> tuple[bool, str]:
     """Validate that Supabase credentials can read the timetable history table."""
     config = config or SupabaseConfig.from_env()
     if config is None:
-        return False, "Supabase is not configured."
+        return False, _missing_config_message()
 
     query = urlencode({"select": "id", "limit": "1"})
     request = Request(f"{config.endpoint}?{query}", headers=config.headers, method="GET")
@@ -95,7 +111,7 @@ def fetch_timetable_history(limit: int = 10, config: SupabaseConfig | None = Non
     """Fetch recent timetable history rows from Supabase when configured."""
     config = config or SupabaseConfig.from_env()
     if config is None:
-        return [], "Supabase is not configured."
+        return [], _missing_config_message()
 
     query = urlencode(
         {
@@ -116,7 +132,7 @@ def sync_timetable_history(timetable: Timetable, config: SupabaseConfig | None =
     """Persist generated timetable history to Supabase PostgREST when configured."""
     config = config or SupabaseConfig.from_env()
     if config is None:
-        return False, "Supabase is not configured."
+        return False, _missing_config_message()
 
     payload = json.dumps(timetable_payload(timetable)).encode("utf-8")
     request = Request(

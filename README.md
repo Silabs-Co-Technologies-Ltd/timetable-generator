@@ -104,7 +104,10 @@ SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SECRET_KEY=your-service-or-secret-key
 SUPABASE_PUBLISHABLE_KEY=your-publishable-key
 SUPABASE_TIMETABLE_TABLE=timetable_history
+SUPABASE_JWKS_URL=https://your-project.supabase.co/auth/v1/.well-known/jwks.json
 ```
+
+`SUPABASE_SECRET_KEY` is preferred for server-side sync because it can bypass row-level security policies configured for browser clients. If it is not present, the application falls back to `SUPABASE_PUBLISHABLE_KEY`. Configure these values in the hosting provider (for example, Vercel Project Settings > Environment Variables) rather than committing real keys to the repository.
 
 Create the Supabase table before enabling sync:
 
