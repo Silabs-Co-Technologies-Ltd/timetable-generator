@@ -101,14 +101,16 @@ Set these variables in the deployment environment:
 
 ```text
 SUPABASE_URL=https://your-project.supabase.co
+# NEXT_PUBLIC_SUPABASE_URL is also accepted when provided by a Vercel/Supabase integration.
 SUPABASE_SECRET_KEY=your-service-or-secret-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 SUPABASE_PUBLISHABLE_KEY=your-publishable-key
-# SUPABASE_KEY is also accepted as a compatibility alias for publishable keys.
+# SUPABASE_KEY, SUPABASE_ANON_KEY, and NEXT_PUBLIC_SUPABASE_ANON_KEY are also accepted as publishable/anon key aliases.
 SUPABASE_TIMETABLE_TABLE=timetable_history
 SUPABASE_JWKS_URL=https://your-project.supabase.co/auth/v1/.well-known/jwks.json
 ```
 
-`SUPABASE_SECRET_KEY` is preferred for server-side sync because it can bypass row-level security policies configured for browser clients. If it is not present, the application falls back to `SUPABASE_PUBLISHABLE_KEY`, then the compatibility alias `SUPABASE_KEY`. Configure these values in the hosting provider (for example, Vercel Project Settings > Environment Variables) rather than committing real keys to the repository.
+`SUPABASE_SECRET_KEY` is preferred for server-side sync because it can bypass row-level security policies configured for browser clients. If it is not present, the application falls back to `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_KEY`, `SUPABASE_ANON_KEY`, and `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Configure these values in the hosting provider (for example, Vercel Project Settings > Environment Variables) rather than committing real keys to the repository. For local development, copy `.env.example` to an untracked `.env` file and put the real `SUPABASE_URL` and `SUPABASE_KEY` values there; `.env` is intentionally ignored by Git.
 
 Create the Supabase tables before enabling sync. The complete schema is available in [`docs/supabase-schema.sql`](docs/supabase-schema.sql); the history table used by the sync is:
 

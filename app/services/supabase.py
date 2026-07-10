@@ -11,6 +11,21 @@ from urllib.request import Request, urlopen
 from app.models import Timetable
 
 
+SUPABASE_URL_ENV_NAMES = ("SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_URL")
+SUPABASE_KEY_ENV_NAMES = (
+    "SUPABASE_SECRET_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_PUBLISHABLE_KEY",
+    "SUPABASE_KEY",
+    "SUPABASE_ANON_KEY",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+)
+
+
+def _first_env_value(names: tuple[str, ...]) -> str:
+    return next((value for name in names if (value := os.getenv(name, "").strip())), "")
+
+
 @dataclass(frozen=True)
 class SupabaseConfig:
     url: str
@@ -19,12 +34,8 @@ class SupabaseConfig:
 
     @classmethod
     def from_env(cls) -> "SupabaseConfig | None":
-        url = os.getenv("SUPABASE_URL", "").rstrip("/")
-        key = (
-            os.getenv("SUPABASE_SECRET_KEY")
-            or os.getenv("SUPABASE_PUBLISHABLE_KEY")
-            or os.getenv("SUPABASE_KEY")
-        )
+        url = _first_env_value(SUPABASE_URL_ENV_NAMES).rstrip("/")
+        key = _first_env_value(SUPABASE_KEY_ENV_NAMES)
         table = os.getenv("SUPABASE_TIMETABLE_TABLE", "timetable_history")
         if not url or not key:
             return None
@@ -33,14 +44,10 @@ class SupabaseConfig:
     @classmethod
     def missing_env_names(cls) -> list[str]:
         missing = []
-        if not os.getenv("SUPABASE_URL", "").strip():
-            missing.append("SUPABASE_URL")
-        if not (
-            os.getenv("SUPABASE_SECRET_KEY")
-            or os.getenv("SUPABASE_PUBLISHABLE_KEY")
-            or os.getenv("SUPABASE_KEY")
-        ):
-            missing.append("SUPABASE_SECRET_KEY, SUPABASE_PUBLISHABLE_KEY, or SUPABASE_KEY")
+        if not _first_env_value(SUPABASE_URL_ENV_NAMES):
+            missing.append(" or ".join(SUPABASE_URL_ENV_NAMES))
+        if not _first_env_value(SUPABASE_KEY_ENV_NAMES):
+            missing.append(", ".join(SUPABASE_KEY_ENV_NAMES[:-1]) + f", or {SUPABASE_KEY_ENV_NAMES[-1]}")
         return missing
 
     @property
