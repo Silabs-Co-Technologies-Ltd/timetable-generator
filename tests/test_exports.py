@@ -43,14 +43,30 @@ def test_fetch_history_reports_missing_supabase_configuration(monkeypatch):
     monkeypatch.delenv("SUPABASE_URL", raising=False)
     monkeypatch.delenv("SUPABASE_SECRET_KEY", raising=False)
     monkeypatch.delenv("SUPABASE_PUBLISHABLE_KEY", raising=False)
+    monkeypatch.delenv("SUPABASE_KEY", raising=False)
 
     rows, message = fetch_timetable_history()
 
     assert rows == []
     assert message == (
         "Supabase is not configured. Missing: SUPABASE_URL, "
-        "SUPABASE_SECRET_KEY or SUPABASE_PUBLISHABLE_KEY."
+        "SUPABASE_SECRET_KEY, SUPABASE_PUBLISHABLE_KEY, or SUPABASE_KEY."
     )
+
+
+def test_supabase_config_accepts_supabase_key_alias(monkeypatch):
+    from app.services.supabase import SupabaseConfig
+
+    monkeypatch.setenv("SUPABASE_URL", "https://example.supabase.co")
+    monkeypatch.delenv("SUPABASE_SECRET_KEY", raising=False)
+    monkeypatch.delenv("SUPABASE_PUBLISHABLE_KEY", raising=False)
+    monkeypatch.setenv("SUPABASE_KEY", "publishable-test-key")
+
+    config = SupabaseConfig.from_env()
+
+    assert config is not None
+    assert config.key == "publishable-test-key"
+    assert config.endpoint == "https://example.supabase.co/rest/v1/timetable_history"
 
 
 def test_firebase_connection_reports_missing_configuration(monkeypatch):

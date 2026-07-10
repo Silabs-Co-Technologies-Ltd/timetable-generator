@@ -103,13 +103,14 @@ Set these variables in the deployment environment:
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SECRET_KEY=your-service-or-secret-key
 SUPABASE_PUBLISHABLE_KEY=your-publishable-key
+# SUPABASE_KEY is also accepted as a compatibility alias for publishable keys.
 SUPABASE_TIMETABLE_TABLE=timetable_history
 SUPABASE_JWKS_URL=https://your-project.supabase.co/auth/v1/.well-known/jwks.json
 ```
 
-`SUPABASE_SECRET_KEY` is preferred for server-side sync because it can bypass row-level security policies configured for browser clients. If it is not present, the application falls back to `SUPABASE_PUBLISHABLE_KEY`. Configure these values in the hosting provider (for example, Vercel Project Settings > Environment Variables) rather than committing real keys to the repository.
+`SUPABASE_SECRET_KEY` is preferred for server-side sync because it can bypass row-level security policies configured for browser clients. If it is not present, the application falls back to `SUPABASE_PUBLISHABLE_KEY`, then the compatibility alias `SUPABASE_KEY`. Configure these values in the hosting provider (for example, Vercel Project Settings > Environment Variables) rather than committing real keys to the repository.
 
-Create the Supabase table before enabling sync:
+Create the Supabase tables before enabling sync. The complete schema is available in [`docs/supabase-schema.sql`](docs/supabase-schema.sql); the history table used by the sync is:
 
 ```sql
 create table if not exists timetable_history (
