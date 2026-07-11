@@ -4,6 +4,7 @@ from datetime import datetime
 from io import BytesIO
 
 from flask import Blueprint, flash, redirect, render_template, request, send_file, url_for
+from sqlalchemy.exc import IntegrityError
 
 from app.extensions import db
 from app.models import Course, Lecturer, Room, StudentGroup, Timetable, TimetableEntry, Timeslot
@@ -34,8 +35,17 @@ def dashboard():
 @roles_required("admin", "scheduler")
 def lecturers():
     if request.method == "POST":
-        db.session.add(Lecturer(name=request.form["name"], email=request.form.get("email") or None))
-        db.session.commit()
+        lecturer = Lecturer(
+            name=request.form["name"].strip(),
+            email=(request.form.get("email") or "").strip() or None,
+        )
+        db.session.add(lecturer)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            flash("A lecturer with that email already exists.", "error")
+            return redirect(url_for("main.lecturers"))
         flash("Lecturer saved.", "success")
         return redirect(url_for("main.lecturers"))
     return render_template(
@@ -49,12 +59,17 @@ def rooms():
     if request.method == "POST":
         db.session.add(
             Room(
-                code=request.form["code"],
+                code=request.form["code"].strip().upper(),
                 capacity=int(request.form["capacity"]),
                 has_projection=bool(request.form.get("has_projection")),
             )
         )
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            flash("A room with that code already exists.", "error")
+            return redirect(url_for("main.rooms"))
         flash("Room saved.", "success")
         return redirect(url_for("main.rooms"))
     return render_template("rooms/index.html", rooms=Room.query.order_by(Room.code).all())
@@ -70,7 +85,12 @@ def groups():
             size=int(request.form["size"]),
         )
     )
-    db.session.commit()
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        flash("A student group with that name already exists.", "error")
+        return redirect(url_for("main.courses"))
     flash("Student group saved.", "success")
     return redirect(url_for("main.courses"))
 

@@ -29,7 +29,9 @@ def client(app):
 
 
 def login(client):
-    return client.post("/auth/login", data={"email": "admin@example.com", "password": "password123"})
+    return client.post(
+        "/auth/login", data={"email": "admin@example.com", "password": "password123"}
+    )
 
 
 def test_courses_page_explains_required_prerequisites(client):
@@ -112,3 +114,14 @@ def test_course_creation_rejects_duplicate_code(client):
     assert b"Course code CSC401 already exists." in response.data
     with client.application.app_context():
         assert Course.query.filter_by(code="CSC401").count() == 1
+
+
+def test_duplicate_room_code_shows_validation_error(client):
+    login(client)
+
+    first = client.post("/rooms", data={"code": "lab1", "capacity": "40"}, follow_redirects=True)
+    second = client.post("/rooms", data={"code": "LAB1", "capacity": "40"}, follow_redirects=True)
+
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert b"A room with that code already exists." in second.data

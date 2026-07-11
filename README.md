@@ -78,15 +78,33 @@ The source proposal identifies the following preferred implementation stack:
 
 ## Getting Started
 
-Recommended next steps:
+### Run locally from a terminal
 
-1. Confirm the production deployment target: institutional cPanel/shared hosting, LAN server, or another Python hosting environment.
-2. Define database models for courses, lecturers, rooms, availability, time slots, timetables, and audit events.
-3. Implement CRUD workflows and validation for all scheduling inputs.
-4. Build and test the CSP scheduling engine independently.
-5. Add timetable grid views, conflict/infeasibility reporting, and export workflows.
-6. Add authentication and role-based access control.
-7. Document deployment and operational setup for the selected environment.
+1. Create and activate a virtual environment with Python 3.10 or newer.
+2. Install dependencies:
+
+   ```bash
+   python -m pip install -r requirements.txt
+   ```
+
+3. Copy `.env.example` to `.env` and change the development secret and initial admin password if needed.
+4. Start the development server:
+
+   ```bash
+   python run.py
+   ```
+
+5. Open <http://127.0.0.1:5000> and sign in with the configured initial admin account.
+
+### Run in PyCharm
+
+1. Open this repository folder as a PyCharm project.
+2. Configure a Python 3.10+ virtual environment for the project interpreter.
+3. Install packages from `requirements.txt` through PyCharm or with `python -m pip install -r requirements.txt` in the PyCharm terminal.
+4. Copy `.env.example` to `.env` for local settings.
+5. Create a **Python** run configuration with `run.py` as the script path, or right-click `run.py` and choose **Run**.
+
+The app stores local SQLite data in `instance/timetable.sqlite3` by default. Delete that file if you want to reset local development data.
 
 ## Documentation
 

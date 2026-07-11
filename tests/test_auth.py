@@ -33,7 +33,9 @@ def client(app):
 
 
 def login(client, email):
-    return client.post("/auth/login", data={"email": email, "password": "password123"}, follow_redirects=True)
+    return client.post(
+        "/auth/login", data={"email": email, "password": "password123"}, follow_redirects=True
+    )
 
 
 def test_dashboard_requires_login(client):
@@ -83,3 +85,32 @@ def test_load_dotenv_reads_sqlite_database_path(tmp_path, monkeypatch):
     _load_dotenv(str(env_file))
 
     assert os.environ["SQLITE_DATABASE_PATH"] == "persistent.sqlite3"
+
+
+def test_login_rejects_external_next_redirect(client):
+    response = client.post(
+        "/auth/login?next=https://evil.example/path",
+        data={"email": "admin@example.com", "password": "password123"},
+    )
+
+    assert response.status_code == 302
+    assert response.headers["Location"] == "/"
+
+
+def test_duplicate_user_email_shows_validation_error(client):
+    login(client, "admin@example.com")
+
+    response = client.post(
+        "/auth/users",
+        data={
+            "name": "Duplicate Admin",
+            "email": "admin@example.com",
+            "password": "password123",
+            "role": "admin",
+            "is_active": "on",
+        },
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+    assert b"A user with that email already exists." in response.data
