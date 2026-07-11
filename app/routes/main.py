@@ -1,18 +1,48 @@
 from __future__ import annotations
 
-from datetime import datetime
 from io import BytesIO
 
-from flask import Blueprint, flash, redirect, render_template, request, send_file, url_for
+from flask import (
+    Blueprint,
+    flash,
+    redirect,
+    render_template,
+    request,
+    send_file,
+    url_for,
+)
 from sqlalchemy.exc import IntegrityError
 
 from app.extensions import db
-from app.models import Course, Lecturer, Room, StudentGroup, Timetable, TimetableEntry, Timeslot
+from app.models import (
+    Course,
+    Lecturer,
+    Room,
+    StudentGroup,
+    Timetable,
+    TimetableEntry,
+    Timeslot,
+)
+from app.naub_timetable import (
+    NAUB_DAY_PAIRS,
+    NAUB_DAYS,
+    NAUB_TIME_PERIODS,
+    NAUB_TIMETABLE_TERM,
+    NAUB_VENUES,
+)
 from app.routes.auth import login_required, roles_required
 from app.services.exports import build_timetable_pdf
 from app.services.scheduler import generate_schedule
 
 bp = Blueprint("main", __name__)
+
+
+def _naub_timeslot_sort_key(timeslot: Timeslot) -> tuple[int, object]:
+    try:
+        day_index = NAUB_DAYS.index(timeslot.day)
+    except ValueError:
+        day_index = len(NAUB_DAYS)
+    return day_index, timeslot.start_time
 
 
 @bp.get("/")
@@ -26,8 +56,13 @@ def dashboard():
             "rooms": Room.query.count(),
             "timeslots": Timeslot.query.count(),
         },
-        latest_timetable=Timetable.query.order_by(Timetable.generated_at.desc()).first(),
-        timetable_history=Timetable.query.order_by(Timetable.generated_at.desc()).limit(5).all(),
+        latest_timetable=Timetable.query.order_by(
+            Timetable.generated_at.desc()
+        ).first(),
+        timetable_history=Timetable.query.order_by(Timetable.generated_at.desc())
+        .limit(5)
+        .all(),
+        timetable_term=NAUB_TIMETABLE_TERM,
     )
 
 
@@ -72,7 +107,9 @@ def rooms():
             return redirect(url_for("main.rooms"))
         flash("Room saved.", "success")
         return redirect(url_for("main.rooms"))
-    return render_template("rooms/index.html", rooms=Room.query.order_by(Room.code).all())
+    return render_template(
+        "rooms/index.html", rooms=Room.query.order_by(Room.code).all()
+    )
 
 
 @bp.route("/groups", methods=["POST"])
@@ -99,19 +136,11 @@ def groups():
 @roles_required("admin", "scheduler")
 def timeslots():
     if request.method == "POST":
-        start = datetime.strptime(request.form["start_time"], "%H:%M").time()
-        end = datetime.strptime(request.form["end_time"], "%H:%M").time()
-        db.session.add(
-            Timeslot(
-                day=request.form["day"], start_time=start, end_time=end, label=request.form["label"]
-            )
-        )
-        db.session.commit()
-        flash("Timeslot saved.", "success")
+        flash("NAUB timetable periods are fixed for Semester 2025/2026B.", "error")
         return redirect(url_for("main.timeslots"))
     return render_template(
         "timeslots/index.html",
-        timeslots=Timeslot.query.order_by(Timeslot.day, Timeslot.start_time).all(),
+        timeslots=sorted(Timeslot.query.all(), key=_naub_timeslot_sort_key),
     )
 
 
@@ -124,7 +153,8 @@ def courses():
     if request.method == "POST":
         if not lecturers or not groups:
             flash(
-                "Add at least one lecturer and one student group before saving a course.", "error"
+                "Add at least one lecturer and one student group before saving a course.",
+                "error",
             )
             return redirect(url_for("main.courses"))
 
@@ -135,7 +165,9 @@ def courses():
         expected_class_size = request.form.get("expected_class_size", type=int)
         weekly_contact_hours = request.form.get("weekly_contact_hours", type=int)
 
-        selected_lecturer = db.session.get(Lecturer, lecturer_id) if lecturer_id else None
+        selected_lecturer = (
+            db.session.get(Lecturer, lecturer_id) if lecturer_id else None
+        )
         selected_group = (
             db.session.get(StudentGroup, student_group_id) if student_group_id else None
         )
@@ -185,9 +217,10 @@ def generate_timetable():
     result = generate_schedule(
         Course.query.all(),
         Room.query.all(),
-        Timeslot.query.order_by(Timeslot.day, Timeslot.start_time).all(),
+        sorted(Timeslot.query.all(), key=_naub_timeslot_sort_key),
     )
     timetable = Timetable(
+        term=NAUB_TIMETABLE_TERM,
         status="complete" if result.success else "infeasible",
         conflict_summary="\n".join(result.messages),
     )
@@ -221,7 +254,13 @@ def timetable_history():
 @login_required
 def view_timetable(timetable_id: int):
     timetable = Timetable.query.get_or_404(timetable_id)
-    return render_template("timetables/show.html", timetable=timetable)
+    return render_template(
+        "timetables/show.html",
+        timetable=timetable,
+        day_pairs=NAUB_DAY_PAIRS,
+        time_periods=NAUB_TIME_PERIODS,
+        venue_codes=NAUB_VENUES,
+    )
 
 
 @bp.get("/timetables/<int:timetable_id>/pdf")

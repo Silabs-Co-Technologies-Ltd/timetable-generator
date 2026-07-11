@@ -43,3 +43,29 @@ def test_generate_schedule_reports_capacity_failure():
 
     assert result.success is False
     assert "Could not place CSC402" in result.messages[0]
+
+
+def test_naub_timetable_structure_has_fixed_days_venues_and_lunch_break():
+    from app.naub_timetable import NAUB_DAY_PAIRS, NAUB_TIME_PERIODS, NAUB_VENUES
+
+    assert NAUB_DAY_PAIRS == (
+        ("Monday", "Tuesday"),
+        ("Wednesday", "Thursday"),
+        ("Friday", "Saturday"),
+    )
+    assert NAUB_VENUES == (
+        "ARLH001",
+        "ARLH002",
+        "ARLH003",
+        "ARLH101",
+        "ARLR001",
+        "SSLR101",
+        "ARLR101",
+        "ARLR102",
+    )
+    assert len(NAUB_TIME_PERIODS) == 10
+    assert [period["label"] for period in NAUB_TIME_PERIODS][0] == "8:00–9:00 a.m."
+    assert [period["label"] for period in NAUB_TIME_PERIODS][-1] == "5:00–6:00 p.m."
+    assert [period for period in NAUB_TIME_PERIODS if period["is_lunch"]][0][
+        "label"
+    ] == "1:00–2:00 p.m."

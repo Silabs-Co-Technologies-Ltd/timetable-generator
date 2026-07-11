@@ -1,5 +1,5 @@
 {% extends "layouts/base.html" %}{% block content %}
-<h2>Timeslots</h2>
-<form method="post" class="form-grid"><input name="day" placeholder="Day" required><input name="label" placeholder="Label" required><input name="start_time" type="time" required><input name="end_time" type="time" required><button>Save</button></form>
+<h2>Fixed NAUB Timeslots</h2>
+<p>The Semester 2025/2026B structure is hard-coded from Monday to Saturday, 8:00 a.m. to 6:00 p.m., with 1:00–2:00 p.m. reserved for lunch. Custom timeslot creation is disabled.</p>
 <table><tr><th>Day</th><th>Time</th><th>Label</th></tr>{% for slot in timeslots %}<tr><td>{{ slot.day }}</td><td>{{ slot.start_time.strftime('%H:%M') }}–{{ slot.end_time.strftime('%H:%M') }}</td><td>{{ slot.label }}</td></tr>{% endfor %}</table>
 {% endblock %}

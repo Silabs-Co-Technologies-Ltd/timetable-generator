@@ -6,7 +6,14 @@ from pathlib import Path
 from flask import Flask
 
 from app.extensions import db
-from app.models import User
+from app.models import Room, Timeslot, User
+from app.naub_timetable import (
+    NAUB_DEFAULT_ROOM_CAPACITY,
+    NAUB_TEACHING_PERIODS,
+    NAUB_TIMETABLE_TERM,
+    NAUB_VENUES,
+    NAUB_DAYS,
+)
 from app.routes import register_blueprints
 
 
@@ -41,6 +48,33 @@ def _default_database_uri(app: Flask) -> str:
     return f"sqlite:///{path}"
 
 
+def _seed_naub_structure() -> None:
+    """Ensure the fixed NAUB timetable venues and teaching periods exist."""
+    for venue in NAUB_VENUES:
+        if not Room.query.filter_by(code=venue).first():
+            db.session.add(
+                Room(
+                    code=venue, capacity=NAUB_DEFAULT_ROOM_CAPACITY, has_projection=True
+                )
+            )
+
+    for day in NAUB_DAYS:
+        for period in NAUB_TEACHING_PERIODS:
+            exists = Timeslot.query.filter_by(
+                day=day, start_time=period["start"], end_time=period["end"]
+            ).first()
+            if not exists:
+                db.session.add(
+                    Timeslot(
+                        day=day,
+                        start_time=period["start"],
+                        end_time=period["end"],
+                        label=str(period["label"]),
+                    )
+                )
+    db.session.commit()
+
+
 def create_app(config_object: str | None = None) -> Flask:
     _load_dotenv()
 
@@ -68,5 +102,6 @@ def create_app(config_object: str | None = None) -> Flask:
             admin.set_password(os.getenv("INITIAL_ADMIN_PASSWORD", "change-me-now"))
             db.session.add(admin)
             db.session.commit()
+        _seed_naub_structure()
 
     return app
