@@ -1,25 +1,14 @@
 {% extends "layouts/base.html" %}{% block content %}
 <h2>Student groups</h2>
 <form method="post" action="{{ url_for('main.groups') }}" class="form-grid"><input name="name" placeholder="Group name" required><input name="level" placeholder="Level"><input name="size" type="number" min="1" placeholder="Size" required><button>Save group</button></form>
+<table><tr><th>Name</th><th>Level</th><th>Size</th><th>Admin actions</th></tr>{% for group in groups %}<tr><form method="post" action="{{ url_for('main.groups') }}"><input type="hidden" name="group_id" value="{{ group.id }}"><td><input name="name" value="{{ group.name }}" required></td><td><input name="level" value="{{ group.level or '' }}"></td><td><input name="size" type="number" min="1" value="{{ group.size }}" required></td><td><button>Update</button></form><form method="post" action="{{ url_for('main.delete_group', group_id=group.id) }}" class="inline-form"><button type="submit">Delete</button></form></td></tr>{% endfor %}</table>
 <h2>Courses</h2>
-{% if not lecturers or not groups %}
-  <p class="flash error">Create at least one lecturer and one student group before adding a course.</p>
-{% endif %}
+{% if not lecturers or not groups %}<p class="flash error">Create at least one lecturer and one student group before adding a course.</p>{% endif %}
 <form method="post" class="form-grid">
-  <input name="code" placeholder="Code" required>
-  <input name="title" placeholder="Title" required>
-  <select name="lecturer_id" required {% if not lecturers %}disabled{% endif %}>
-    <option value="">Select lecturer</option>
-    {% for lecturer in lecturers %}<option value="{{ lecturer.id }}">{{ lecturer.name }}</option>{% endfor %}
-  </select>
-  <select name="student_group_id" required {% if not groups %}disabled{% endif %}>
-    <option value="">Select group</option>
-    {% for group in groups %}<option value="{{ group.id }}">{{ group.name }}</option>{% endfor %}
-  </select>
-  <input name="expected_class_size" type="number" min="1" placeholder="Class size" required>
-  <input name="weekly_contact_hours" type="number" min="1" value="1" required>
-  <label><input type="checkbox" name="requires_projection"> Needs projection</label>
-  <button {% if not lecturers or not groups %}disabled{% endif %}>Save course</button>
+  <input name="code" placeholder="Code" required><input name="title" placeholder="Title" required><input name="unit" type="number" min="1" value="1" required><input name="status" placeholder="Status" value="C" required><input name="lecture_hours" type="number" min="0" value="0" required><input name="practical_hours" type="number" min="0" value="0" required><input name="semester" placeholder="Semester" value="1" required>
+  <select name="lecturer_id" required {% if not lecturers %}disabled{% endif %}><option value="">Select lecturer</option>{% for lecturer in lecturers %}<option value="{{ lecturer.id }}">{{ lecturer.name }}</option>{% endfor %}</select>
+  <select name="student_group_id" required {% if not groups %}disabled{% endif %}><option value="">Select group</option>{% for group in groups %}<option value="{{ group.id }}">{{ group.name }}</option>{% endfor %}</select>
+  <input name="expected_class_size" type="number" min="1" placeholder="Class size" required><input name="weekly_contact_hours" type="number" min="1" value="1" required><label><input type="checkbox" name="requires_projection"> Needs projection</label><button {% if not lecturers or not groups %}disabled{% endif %}>Save course</button>
 </form>
-<table><tr><th>Code</th><th>Title</th><th>Lecturer</th><th>Group</th><th>Hours</th></tr>{% for course in courses %}<tr><td>{{ course.code }}</td><td>{{ course.title }}</td><td>{{ course.lecturer.name }}</td><td>{{ course.student_group.name }}</td><td>{{ course.weekly_contact_hours }}</td></tr>{% endfor %}</table>
+<table><tr><th>Code</th><th>Title</th><th>Unit</th><th>Status</th><th>LH</th><th>PH</th><th>Semester</th><th>Lecturer</th><th>Group</th><th>Hours</th><th>Admin actions</th></tr>{% for course in courses %}<tr><form method="post"><input type="hidden" name="course_id" value="{{ course.id }}"><td><input name="code" value="{{ course.code }}" required></td><td><input name="title" value="{{ course.title }}" required></td><td><input name="unit" type="number" min="1" value="{{ course.unit }}" required></td><td><input name="status" value="{{ course.status }}" required></td><td><input name="lecture_hours" type="number" min="0" value="{{ course.lecture_hours }}" required></td><td><input name="practical_hours" type="number" min="0" value="{{ course.practical_hours }}" required></td><td><input name="semester" value="{{ course.semester }}" required></td><td><select name="lecturer_id" required>{% for lecturer in lecturers %}<option value="{{ lecturer.id }}" {% if lecturer.id == course.lecturer_id %}selected{% endif %}>{{ lecturer.name }}</option>{% endfor %}</select></td><td><select name="student_group_id" required>{% for group in groups %}<option value="{{ group.id }}" {% if group.id == course.student_group_id %}selected{% endif %}>{{ group.name }}</option>{% endfor %}</select></td><td><input name="expected_class_size" type="hidden" value="{{ course.expected_class_size }}"><input name="weekly_contact_hours" type="number" min="1" value="{{ course.weekly_contact_hours }}" required><label><input name="requires_projection" type="checkbox" {% if course.requires_projection %}checked{% endif %}> Projection</label></td><td><button>Update</button></form><form method="post" action="{{ url_for('main.delete_course', course_id=course.id) }}" class="inline-form"><button type="submit">Delete</button></form></td></tr>{% endfor %}</table>
 {% endblock %}

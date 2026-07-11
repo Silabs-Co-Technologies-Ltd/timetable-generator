@@ -1,5 +1,5 @@
 {% extends "layouts/base.html" %}{% block content %}
 <h2>Lecturers</h2>
-<form method="post" class="form-grid"><input name="name" placeholder="Name" required><input name="email" type="email" placeholder="Email"><button>Save</button></form>
-<table><tr><th>Name</th><th>Email</th></tr>{% for lecturer in lecturers %}<tr><td>{{ lecturer.name }}</td><td>{{ lecturer.email or '—' }}</td></tr>{% endfor %}</table>
+<form method="post" class="form-grid"><input name="name" placeholder="Name" required><input name="email" type="email" placeholder="Email"><button>Save new lecturer</button></form>
+<table><tr><th>Name</th><th>Email</th><th>Admin actions</th></tr>{% for lecturer in lecturers %}<tr><form method="post"><input type="hidden" name="lecturer_id" value="{{ lecturer.id }}"><td><input name="name" value="{{ lecturer.name }}" required></td><td><input name="email" type="email" value="{{ lecturer.email or '' }}"></td><td><button>Update</button></form><form method="post" action="{{ url_for('main.delete_lecturer', lecturer_id=lecturer.id) }}" class="inline-form"><button type="submit">Delete</button></form></td></tr>{% endfor %}</table>
 {% endblock %}
