@@ -39,3 +39,23 @@ nav { display: flex; align-items: center; flex-wrap: wrap; gap: 0.75rem; }
 .integration-status p:last-child { margin-bottom: 0; }
 .integration-status summary { color: #075985; cursor: pointer; font-weight: 700; }
 .integration-status ul { margin: 0.5rem 0 0; padding-left: 1.25rem; }
+
+.timetable-legend { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
+.legend-item { border-radius: 999px; color: #111827; font-weight: 700; padding: 0.45rem 0.75rem; }
+.legend-day { background: #bfdbfe; }
+.legend-time { background: #bbf7d0; }
+.legend-venue { background: #e9d5ff; }
+.legend-lunch { background: #fef08a; }
+.legend-course { background: #fecaca; }
+.legend-empty { background: #f3f4f6; }
+.matrix-card { margin: 1.5rem 0; }
+.matrix-scroll { overflow-x: auto; }
+.timetable-matrix { min-width: 1800px; font-size: 0.82rem; }
+.timetable-matrix th, .timetable-matrix td { border: 1px solid #d1d5db; padding: 0.45rem; text-align: center; vertical-align: middle; }
+.day-heading { background: #bfdbfe; color: #1e3a8a; }
+.time-heading { background: #bbf7d0; color: #14532d; min-width: 84px; }
+.venue-heading, .venue-cell { background: #e9d5ff; color: #581c87; font-weight: 800; position: sticky; left: 0; z-index: 1; }
+.lunch-heading, .lunch-cell { background: #fef08a; color: #713f12; font-weight: 800; }
+.course-cell { background: #fee2e2; color: #7f1d1d; }
+.course-cell small { display: block; font-size: 0.72rem; margin-top: 0.2rem; }
+.empty-cell { background: #f9fafb; color: #9ca3af; }
