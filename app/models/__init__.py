@@ -1,9 +1,14 @@
 from __future__ import annotations
 
-from datetime import datetime, time
+from datetime import datetime, time, timezone
 
 from app.extensions import db
 from werkzeug.security import check_password_hash, generate_password_hash
+
+
+def utc_now() -> datetime:
+    """Return a timezone-naive UTC timestamp for SQLAlchemy defaults."""
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 USER_ROLES = ("admin", "scheduler", "viewer")
@@ -16,7 +21,7 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(30), nullable=False, default="viewer")
     is_active = db.Column(db.Boolean, nullable=False, default=True)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, nullable=False, default=utc_now)
 
     def set_password(self, password: str) -> None:
         self.password_hash = generate_password_hash(password)
@@ -31,7 +36,6 @@ class User(db.Model):
     @property
     def can_manage_users(self) -> bool:
         return self.role == "admin"
-
 
 
 class Lecturer(db.Model):
@@ -90,9 +94,11 @@ class Timetable(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     term = db.Column(db.String(120), nullable=False, default="Current Term")
     status = db.Column(db.String(30), nullable=False, default="draft")
-    generated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    generated_at = db.Column(db.DateTime, nullable=False, default=utc_now)
     conflict_summary = db.Column(db.Text, default="")
-    entries = db.relationship("TimetableEntry", back_populates="timetable", cascade="all, delete-orphan")
+    entries = db.relationship(
+        "TimetableEntry", back_populates="timetable", cascade="all, delete-orphan"
+    )
 
 
 class TimetableEntry(db.Model):

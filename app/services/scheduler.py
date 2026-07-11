@@ -20,17 +20,25 @@ class ScheduleResult:
     messages: tuple[str, ...]
 
 
-def generate_schedule(courses: Iterable[Course], rooms: Iterable[Room], timeslots: Iterable[Timeslot]) -> ScheduleResult:
-    course_units = [course for course in courses for _ in range(max(course.weekly_contact_hours, 1))]
+def generate_schedule(
+    courses: Iterable[Course], rooms: Iterable[Room], timeslots: Iterable[Timeslot]
+) -> ScheduleResult:
+    course_units = [
+        course for course in courses for _ in range(max(course.weekly_contact_hours, 1))
+    ]
     rooms = tuple(sorted(rooms, key=lambda room: room.capacity))
     timeslots = tuple(timeslots)
 
     if not course_units:
-        return ScheduleResult(False, (), ("Add at least one course before generating a timetable.",))
+        return ScheduleResult(
+            False, (), ("Add at least one course before generating a timetable.",)
+        )
     if not rooms:
         return ScheduleResult(False, (), ("Add at least one room before generating a timetable.",))
     if not timeslots:
-        return ScheduleResult(False, (), ("Add at least one teaching timeslot before generating a timetable.",))
+        return ScheduleResult(
+            False, (), ("Add at least one teaching timeslot before generating a timetable.",)
+        )
 
     assignments: list[Assignment] = []
     used_room_slots: set[tuple[int, int]] = set()
@@ -48,7 +56,11 @@ def generate_schedule(courses: Iterable[Course], rooms: Iterable[Room], timeslot
                 room_key = (room.id, timeslot.id)
                 lecturer_key = (course.lecturer_id, timeslot.id)
                 group_key = (course.student_group_id, timeslot.id)
-                if room_key in used_room_slots or lecturer_key in used_lecturer_slots or group_key in used_group_slots:
+                if (
+                    room_key in used_room_slots
+                    or lecturer_key in used_lecturer_slots
+                    or group_key in used_group_slots
+                ):
                     continue
                 assignments.append(Assignment(course=course, room=room, timeslot=timeslot))
                 used_room_slots.add(room_key)

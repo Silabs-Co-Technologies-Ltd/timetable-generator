@@ -7,9 +7,18 @@ from flask import Blueprint, flash, g, redirect, render_template, request, sessi
 
 from app.extensions import db
 from app.models import USER_ROLES, User
+from sqlalchemy.exc import IntegrityError
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 F = TypeVar("F", bound=Callable[..., object])
+
+
+def _safe_next_url(default: str) -> str:
+    """Return only same-site redirect targets to avoid open redirects."""
+    next_url = request.args.get("next")
+    if next_url and next_url.startswith("/") and not next_url.startswith("//"):
+        return next_url
+    return default
 
 
 def login_required(view: F) -> F:
@@ -17,7 +26,11 @@ def login_required(view: F) -> F:
     def wrapped_view(*args: object, **kwargs: object) -> object:
         if g.user is None:
             flash("Please sign in to continue.", "error")
-            return redirect(url_for("auth.login", next=request.full_path if request.query_string else request.path))
+            return redirect(
+                url_for(
+                    "auth.login", next=request.full_path if request.query_string else request.path
+                )
+            )
         return view(*args, **kwargs)
 
     return wrapped_view  # type: ignore[return-value]
@@ -29,7 +42,12 @@ def roles_required(*roles: str) -> Callable[[F], F]:
         def wrapped_view(*args: object, **kwargs: object) -> object:
             if g.user is None:
                 flash("Please sign in to continue.", "error")
-                return redirect(url_for("auth.login", next=request.full_path if request.query_string else request.path))
+                return redirect(
+                    url_for(
+                        "auth.login",
+                        next=request.full_path if request.query_string else request.path,
+                    )
+                )
             if g.user.role not in roles:
                 return render_template("auth/forbidden.html", allowed_roles=roles), 403
             return view(*args, **kwargs)
@@ -42,7 +60,7 @@ def roles_required(*roles: str) -> Callable[[F], F]:
 @bp.before_app_request
 def load_logged_in_user() -> None:
     user_id = session.get("user_id")
-    g.user = User.query.get(user_id) if user_id else None
+    g.user = db.session.get(User, user_id) if user_id else None
     if g.user is not None and not g.user.is_active:
         session.clear()
         g.user = None
@@ -60,7 +78,7 @@ def login() -> object:
             session.clear()
             session["user_id"] = user.id
             flash(f"Welcome back, {user.name}.", "success")
-            return redirect(request.args.get("next") or url_for("main.dashboard"))
+            return redirect(_safe_next_url(url_for("main.dashboard")))
     return render_template("auth/login.html")
 
 
@@ -87,7 +105,14 @@ def users() -> object:
         )
         user.set_password(request.form["password"])
         db.session.add(user)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            flash("A user with that email already exists.", "error")
+            return redirect(url_for("auth.users"))
         flash("User account created.", "success")
         return redirect(url_for("auth.users"))
-    return render_template("auth/users.html", roles=USER_ROLES, users=User.query.order_by(User.name).all())
+    return render_template(
+        "auth/users.html", roles=USER_ROLES, users=User.query.order_by(User.name).all()
+    )
